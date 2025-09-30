@@ -273,11 +273,21 @@
         .tips-box h3 { font-size: 1.8rem; margin-bottom: 15px; }
         .tips-box ul { text-align: left; list-style: none; }
         .tips-box li { margin: 10px 0; padding-left: 25px; position: relative; }
-        .tips-box li:before {
-            content: "•";
-            position: absolute;
-            left: 0;
+        .next-btn {
+            background: #3b82f6;
+            color: white;
+            padding: 20px 60px;
+            font-size: 1.3rem;
             font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        .next-btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
         }
         
         .hidden { display: none !important; }
@@ -644,7 +654,7 @@
                                 ${isUnlocked ? `
                                     <div class="level-score">
                                         <p>Passing Score</p>
-                                        <p class="percentage">90%</p>
+                                        <p class="percentage">5/6</p>
                                     </div>
                                 ` : ''}
                             </div>
@@ -657,7 +667,7 @@
                             <li>Each level has unique phishing scenarios</li>
                             <li>Analyze emails carefully for red flags</li>
                             <li>Use URL analysis to inspect suspicious links</li>
-                            <li>You need 90% or higher to advance to the next level</li>
+                            <li>You need 5 out of 6 correct (83%) to advance to the next level</li>
                             <li>Complete all 3 levels to earn the final flag</li>
                             <li>If you fail, you'll restart that level</li>
                         </ul>
@@ -766,6 +776,10 @@
                                         <p style="color: #22c55e;">✓ This is a legitimate email with proper authentication and reasonable requests.</p>
                                     </div>
                                 ` : ''}
+                                
+                                <button class="next-btn" onclick="nextEmail()">
+                                    ${state.currentEmail < levelEmails.length - 1 ? 'Next Email →' : 'View Results'}
+                                </button>
                             </div>
                         ` : ''}
                     </div>
@@ -777,7 +791,7 @@
             const levelKey = levels[state.currentLevel].key;
             const maxScore = emails[levelKey].length * 100;
             const percentage = Math.round((state.score / maxScore) * 100);
-            const isLevel3Complete = state.currentLevel === 3 && percentage >= 90;
+            const isLevel3Complete = state.currentLevel === 3 && percentage >= 83.33;
             
             return `
                 <div class="results-screen">
@@ -851,7 +865,7 @@
                         <h1 class="results-title">Level ${state.currentLevel} Failed</h1>
                         <div class="results-percentage">${percentage}%</div>
                         <p class="results-score">Score: ${state.score} / ${maxScore}</p>
-                        <p style="font-size: 1.5rem; margin-bottom: 30px;">You need 90% or higher to advance</p>
+                        <p style="font-size: 1.5rem; margin-bottom: 30px;">You need 5 out of 6 correct (83%) to advance</p>
                         
                         <div class="stats-grid">
                             <div class="stat-card">
@@ -972,26 +986,28 @@
                 }
                 
                 if (state.lives <= 0) {
-                    setTimeout(() => endLevel(false), 2500);
                     render();
+                    setTimeout(() => endLevel(false), 2500);
                     return;
                 }
             }
             
             render();
+        }
+
+        function nextEmail() {
+            const levelKey = levels[state.currentLevel].key;
+            const levelEmails = emails[levelKey];
             
-            setTimeout(() => {
-                const levelEmails = emails[levelKey];
-                if (state.currentEmail < levelEmails.length - 1) {
-                    state.currentEmail++;
-                    state.selectedAnswer = null;
-                    state.feedback = '';
-                    state.showURLAnalysis = false;
-                    render();
-                } else {
-                    endLevel(true);
-                }
-            }, 3500);
+            if (state.currentEmail < levelEmails.length - 1) {
+                state.currentEmail++;
+                state.selectedAnswer = null;
+                state.feedback = '';
+                state.showURLAnalysis = false;
+                render();
+            } else {
+                endLevel(true);
+            }
         }
 
         function endLevel(completed) {
@@ -1001,7 +1017,7 @@
             const maxScore = emails[levelKey].length * 100;
             const percentage = (state.score / maxScore) * 100;
             
-            if (completed && percentage >= 90) {
+            if (completed && percentage >= 83.33) {
                 if (!state.completedLevels.includes(state.currentLevel)) {
                     state.completedLevels.push(state.currentLevel);
                 }
