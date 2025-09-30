@@ -3,751 +3,1028 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phishing Detective - Security Training</title>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <title>Phishing Detective</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e3a8a 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; padding: 40px 20px; }
+        .shield { font-size: 100px; margin-bottom: 20px; }
+        h1 { font-size: 3.5rem; margin-bottom: 10px; }
+        .subtitle { font-size: 1.3rem; opacity: 0.9; }
+        
+        .level-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .level-card:hover { background: rgba(255, 255, 255, 0.2); }
+        .level-card.locked { opacity: 0.5; cursor: not-allowed; }
+        .level-info { display: flex; align-items: center; gap: 20px; }
+        .level-icon { font-size: 3rem; }
+        .level-details h3 { font-size: 1.8rem; margin-bottom: 5px; }
+        .level-details p { opacity: 0.8; }
+        .level-score { text-align: right; }
+        .level-score p { font-size: 0.9rem; opacity: 0.8; }
+        .level-score .percentage { font-size: 2.5rem; font-weight: bold; }
+        
+        .game-screen {
+            background: #f3f4f6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .game-header {
+            background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .game-stats { display: flex; gap: 30px; align-items: center; flex-wrap: wrap; }
+        .stat { text-align: center; }
+        .stat-value { font-size: 2rem; font-weight: bold; }
+        .stat-label { font-size: 0.9rem; }
+        .lives { display: flex; gap: 5px; }
+        .heart { font-size: 2rem; }
+        .heart.lost { opacity: 0.3; }
+        
+        .email-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .email-box {
+            background: #f9fafb;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            padding: 25px;
+        }
+        .email-header { display: flex; gap: 15px; margin-bottom: 20px; }
+        .email-icon { font-size: 2.5rem; }
+        .email-meta {
+            flex: 1;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #d1d5db;
+        }
+        .email-field { margin-bottom: 10px; color: #1f2937; }
+        .email-field strong { color: #374151; }
+        .email-from {
+            font-family: 'Courier New', monospace;
+            background: #e5e7eb;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        .email-body {
+            color: #1f2937;
+            white-space: pre-line;
+            line-height: 1.6;
+            margin-top: 15px;
+        }
+        
+        .url-section {
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 2px solid #d1d5db;
+        }
+        .analyze-btn {
+            background: #7c3aed;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .analyze-btn:hover { background: #6d28d9; }
+        .url-box {
+            margin-top: 15px;
+            padding: 20px;
+            border-radius: 8px;
+            border: 3px solid;
+        }
+        .url-box.suspicious { background: #fef2f2; border-color: #ef4444; }
+        .url-box.safe { background: #f0fdf4; border-color: #22c55e; }
+        .url-display {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            background: white;
+            padding: 8px;
+            border-radius: 4px;
+            word-break: break-all;
+            margin-bottom: 10px;
+        }
+        .url-status { font-weight: bold; font-size: 1.1rem; margin-bottom: 10px; }
+        .url-reasons { list-style: none; }
+        .url-reasons li { margin: 5px 0; padding-left: 20px; position: relative; }
+        .url-reasons li:before { content: "•"; position: absolute; left: 0; }
+        
+        .button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .choice-btn {
+            padding: 25px 50px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .choice-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        .legitimate-btn { background: #22c55e; color: white; }
+        .legitimate-btn:hover { background: #16a34a; }
+        .phishing-btn { background: #ef4444; color: white; }
+        .phishing-btn:hover { background: #dc2626; }
+        
+        .feedback {
+            margin-top: 25px;
+            padding: 25px;
+            border-radius: 12px;
+            border: 4px solid;
+        }
+        .feedback.correct { background: #dcfce7; border-color: #22c55e; }
+        .feedback.wrong { background: #fee2e2; border-color: #ef4444; }
+        .feedback-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #1f2937;
+        }
+        .red-flags {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        .red-flags h4 { color: #dc2626; font-size: 1.2rem; margin-bottom: 10px; }
+        .red-flags ul { list-style: none; }
+        .red-flags li {
+            margin: 8px 0;
+            padding-left: 20px;
+            position: relative;
+            color: #1f2937;
+        }
+        .red-flags li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #dc2626;
+            font-weight: bold;
+        }
+        
+        .results-screen { text-align: center; padding: 40px 20px; }
+        .results-icon { font-size: 8rem; margin-bottom: 20px; }
+        .results-title { font-size: 4rem; font-weight: bold; margin-bottom: 20px; }
+        .results-percentage { font-size: 6rem; font-weight: bold; margin: 20px 0; }
+        .results-score { font-size: 2rem; margin-bottom: 30px; }
+        
+        .flag-box {
+            background: #fbbf24;
+            color: #1f2937;
+            padding: 40px;
+            border-radius: 12px;
+            margin: 30px auto;
+            max-width: 800px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .flag-box h2 { font-size: 2.5rem; margin-bottom: 15px; }
+        .flag-code {
+            background: #1f2937;
+            color: #22c55e;
+            font-family: 'Courier New', monospace;
+            font-size: 1.8rem;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 20px 0;
+            word-break: break-all;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 800px;
+            margin: 30px auto;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .stat-card p { font-size: 0.9rem; opacity: 0.8; margin-bottom: 5px; }
+        .stat-card .number { font-size: 3rem; font-weight: bold; }
+        
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        .action-btn {
+            padding: 15px 35px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .primary-btn { background: #fbbf24; color: #1f2937; }
+        .primary-btn:hover { background: #f59e0b; }
+        .secondary-btn { background: rgba(255, 255, 255, 0.2); color: white; }
+        .secondary-btn:hover { background: rgba(255, 255, 255, 0.3); }
+        
+        .tips-box {
+            background: #fbbf24;
+            color: #1f2937;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 30px auto;
+            max-width: 800px;
+        }
+        .tips-box h3 { font-size: 1.8rem; margin-bottom: 15px; }
+        .tips-box ul { text-align: left; list-style: none; }
+        .tips-box li { margin: 10px 0; padding-left: 25px; position: relative; }
+        .tips-box li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+        
+        .hidden { display: none !important; }
+        .how-to-play {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+        .how-to-play h3 { font-size: 1.8rem; margin-bottom: 15px; }
+        .how-to-play ul { text-align: left; list-style: none; }
+        .how-to-play li { margin: 10px 0; padding-left: 25px; position: relative; }
+        .how-to-play li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+        }
+        
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            .choice-btn { padding: 20px 30px; font-size: 1.2rem; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .results-title { font-size: 2.5rem; }
+            .results-percentage { font-size: 4rem; }
+        }
+    </style>
 </head>
 <body>
-    <div id="root"></div>
-    <script type="text/babel">
-        const { useState, useEffect } = React;
-        const { Shield, Mail, AlertTriangle, CheckCircle, XCircle, Clock, Award, Lock, Unlock, Target } = lucide;
+    <div id="app"></div>
 
-        function PhishingGame() {
-          const [gameState, setGameState] = useState('menu');
-          const [currentLevel, setCurrentLevel] = useState(1);
-          const [currentEmail, setCurrentEmail] = useState(0);
-          const [score, setScore] = useState(0);
-          const [timeLeft, setTimeLeft] = useState(120);
-          const [selectedAnswer, setSelectedAnswer] = useState(null);
-          const [feedback, setFeedback] = useState('');
-          const [lives, setLives] = useState(3);
-          const [completedLevels, setCompletedLevels] = useState([]);
-          const [showURLAnalysis, setShowURLAnalysis] = useState(false);
-          const [statistics, setStatistics] = useState({
-            totalAttempts: 0,
-            correctAnswers: 0,
-            phishingCaught: 0,
-            phishingMissed: 0,
-            legitimateCaught: 0,
-            legitimateMissed: 0,
-            commonMistakes: []
-          });
+    <script>
+        // Game State
+        let state = {
+            screen: 'menu',
+            currentLevel: 1,
+            currentEmail: 0,
+            score: 0,
+            timeLeft: 120,
+            lives: 3,
+            completedLevels: [],
+            showURLAnalysis: false,
+            selectedAnswer: null,
+            feedback: '',
+            stats: {
+                totalAttempts: 0,
+                correctAnswers: 0,
+                phishingCaught: 0,
+                phishingMissed: 0,
+                legitimateCaught: 0,
+                legitimateMissed: 0,
+                mistakes: []
+            }
+        };
 
-          const levels = {
-            1: { name: 'Easy', timer: 120, emails: 'easy' },
-            2: { name: 'Medium', timer: 90, emails: 'medium' },
-            3: { name: 'Hard', timer: 60, emails: 'hard' }
-          };
+        let timerInterval = null;
 
-          const emailData = {
+        // Game Data
+        const levels = {
+            1: { name: 'Easy', timer: 120, key: 'easy' },
+            2: { name: 'Medium', timer: 90, key: 'medium' },
+            3: { name: 'Hard', timer: 60, key: 'hard' }
+        };
+
+        const emails = {
             easy: [
-              {
-                from: "security@paypa1-secure.com",
-                subject: "URGENT: Verify Your Account Now!",
-                body: "Dear valued customer,\n\nWe detected suspicious activity on your account. Click here immediately to verify your identity or your account will be suspended within 24 hours.\n\nClick here: http://paypa1-secure.com/verify?id=12345",
-                isPhishing: true,
-                urls: ["http://paypa1-secure.com/verify?id=12345"],
-                urlAnalysis: {
-                  "http://paypa1-secure.com/verify?id=12345": {
-                    suspicious: true,
-                    reasons: ["Domain uses '1' instead of 'l'", "Not HTTPS secure", "Suspicious URL structure"]
-                  }
+                {
+                    from: "security@paypa1-secure.com",
+                    subject: "URGENT: Verify Your Account Now!",
+                    body: "Dear valued customer,\n\nWe detected suspicious activity. Click here immediately or your account will be suspended.\n\nhttp://paypa1-secure.com/verify?id=12345",
+                    isPhishing: true,
+                    urls: ["http://paypa1-secure.com/verify?id=12345"],
+                    urlAnalysis: {
+                        "http://paypa1-secure.com/verify?id=12345": {
+                            suspicious: true,
+                            reasons: ["Domain uses '1' instead of 'l' (paypa1)", "Not HTTPS secure", "Suspicious URL structure"]
+                        }
+                    },
+                    redFlags: ["Suspicious sender (paypa1 vs paypal)", "Creates urgency and fear", "Generic greeting", "Threatens suspension", "Not HTTPS"]
                 },
-                redFlags: ["Suspicious sender domain (paypa1 vs paypal)", "Creates urgency and fear", "Generic greeting", "Threatens suspension", "Not HTTPS"]
-              },
-              {
-                from: "noreply@amazon.com",
-                subject: "Your Order #123-4567890 Has Shipped",
-                body: "Hello,\n\nYour recent order has been shipped and will arrive in 2-3 business days.\n\nTrack your package using your Amazon account.",
-                isPhishing: false,
-                urls: [],
-                urlAnalysis: {},
-                redFlags: []
-              },
-              {
-                from: "winner@free-prize-claim.biz",
-                subject: "YOU WON $5,000 CASH!!!",
-                body: "CONGRATULATIONS!!!\n\nYou have been randomly selected to receive $5,000 CASH!\n\nClaim now: http://free-prize-claim.biz/winner/claim.php",
-                isPhishing: true,
-                urls: ["http://free-prize-claim.biz/winner/claim.php"],
-                urlAnalysis: {
-                  "http://free-prize-claim.biz/winner/claim.php": {
-                    suspicious: true,
-                    reasons: ["Suspicious .biz domain", "Not HTTPS", "Generic prize URL"]
-                  }
+                {
+                    from: "noreply@amazon.com",
+                    subject: "Your Order #123-4567890 Has Shipped",
+                    body: "Hello,\n\nYour recent order has shipped and will arrive in 2-3 business days.\n\nTrack your package using your Amazon account.",
+                    isPhishing: false,
+                    urls: [],
+                    urlAnalysis: {},
+                    redFlags: []
                 },
-                redFlags: ["Too good to be true", "Excessive exclamation marks", "Suspicious domain", "You didn't enter any contest"]
-              },
-              {
-                from: "support@netflix.com",
-                subject: "Payment Declined - Update Required",
-                body: "Hi,\n\nYour payment method was declined. Please update your billing information.\n\nUpdate payment: https://www.netflix.com/account/billing",
-                isPhishing: false,
-                urls: ["https://www.netflix.com/account/billing"],
-                urlAnalysis: {
-                  "https://www.netflix.com/account/billing": {
-                    suspicious: false,
-                    reasons: ["Legitimate Netflix domain", "Uses HTTPS", "Standard Netflix URL"]
-                  }
+                {
+                    from: "winner@free-prize-claim.biz",
+                    subject: "YOU WON $5,000 CASH!!!",
+                    body: "CONGRATULATIONS!!!\n\nYou won $5,000 CASH! Click to claim:\n\nhttp://free-prize-claim.biz/winner/claim.php",
+                    isPhishing: true,
+                    urls: ["http://free-prize-claim.biz/winner/claim.php"],
+                    urlAnalysis: {
+                        "http://free-prize-claim.biz/winner/claim.php": {
+                            suspicious: true,
+                            reasons: ["Suspicious .biz domain", "Not HTTPS", "Generic prize URL"]
+                        }
+                    },
+                    redFlags: ["Too good to be true", "Excessive exclamation marks", "Suspicious domain", "You didn't enter any contest"]
                 },
-                redFlags: []
-              },
-              {
-                from: "no-reply@micros0ft-security.com",
-                subject: "Security Alert: Unusual Sign-In",
-                body: "We detected a sign-in from an unusual location.\n\nClick here: http://micros0ft-security.com/secure-account",
-                isPhishing: true,
-                urls: ["http://micros0ft-security.com/secure-account"],
-                urlAnalysis: {
-                  "http://micros0ft-security.com/secure-account": {
-                    suspicious: true,
-                    reasons: ["Uses '0' instead of 'o'", "Not official Microsoft domain", "Not HTTPS"]
-                  }
+                {
+                    from: "support@netflix.com",
+                    subject: "Payment Declined - Update Required",
+                    body: "Hi,\n\nYour payment method was declined. Please update your billing information.\n\nhttps://www.netflix.com/account/billing",
+                    isPhishing: false,
+                    urls: ["https://www.netflix.com/account/billing"],
+                    urlAnalysis: {
+                        "https://www.netflix.com/account/billing": {
+                            suspicious: false,
+                            reasons: ["Legitimate Netflix domain", "Uses HTTPS", "Standard Netflix URL"]
+                        }
+                    },
+                    redFlags: []
                 },
-                redFlags: ["Sender uses zero instead of 'o'", "Not from microsoft.com", "Creates urgency"]
-              },
-              {
-                from: "notifications@linkedin.com",
-                subject: "5 New Job Recommendations",
-                body: "Based on your profile, we found 5 new job opportunities.\n\nView all recommendations in your LinkedIn account.",
-                isPhishing: false,
-                urls: [],
-                urlAnalysis: {},
-                redFlags: []
-              }
+                {
+                    from: "no-reply@micros0ft-security.com",
+                    subject: "Security Alert: Unusual Sign-In",
+                    body: "We detected a sign-in from an unusual location.\n\nClick here to secure your account:\nhttp://micros0ft-security.com/secure-account",
+                    isPhishing: true,
+                    urls: ["http://micros0ft-security.com/secure-account"],
+                    urlAnalysis: {
+                        "http://micros0ft-security.com/secure-account": {
+                            suspicious: true,
+                            reasons: ["Uses '0' instead of 'o' (micros0ft)", "Not official Microsoft domain", "Not HTTPS"]
+                        }
+                    },
+                    redFlags: ["Sender uses zero instead of 'o'", "Not from microsoft.com", "Creates urgency", "Suspicious URL"]
+                },
+                {
+                    from: "notifications@linkedin.com",
+                    subject: "5 New Job Recommendations",
+                    body: "Based on your profile, we found 5 new job opportunities:\n\n- Senior Developer at TechCorp\n- Project Manager at StartupCo\n\nView in your LinkedIn account.",
+                    isPhishing: false,
+                    urls: [],
+                    urlAnalysis: {},
+                    redFlags: []
+                }
             ],
             medium: [
-              {
-                from: "security@accounts-google.com",
-                subject: "Google Security Alert",
-                body: "Hi there,\n\nWe noticed a new device signed into your Google account from Moscow.\n\nhttps://accounts-google.com/security/check",
-                isPhishing: true,
-                urls: ["https://accounts-google.com/security/check"],
-                urlAnalysis: {
-                  "https://accounts-google.com/security/check": {
-                    suspicious: true,
-                    reasons: ["Domain is 'accounts-google.com' not 'google.com'", "Subdomain spoofing"]
-                  }
+                {
+                    from: "security@accounts-google.com",
+                    subject: "Google Security Alert",
+                    body: "Hi,\n\nWe noticed a new device signed into your account from Moscow, Russia.\n\nSecure your account:\nhttps://accounts-google.com/security/check",
+                    isPhishing: true,
+                    urls: ["https://accounts-google.com/security/check"],
+                    urlAnalysis: {
+                        "https://accounts-google.com/security/check": {
+                            suspicious: true,
+                            reasons: ["Domain is 'accounts-google.com' not 'google.com'", "Subdomain spoofing", "Real Google uses accounts.google.com"]
+                        }
+                    },
+                    redFlags: ["Domain looks legitimate but isn't", "Creates fear with foreign login", "Subdomain spoofing technique"]
                 },
-                redFlags: ["Domain appears legitimate but isn't", "Creates fear with foreign login", "Subdomain spoofing"]
-              },
-              {
-                from: "boss@yourcompany.com",
-                subject: "RE: Urgent Wire Transfer",
-                body: "I need you to process a wire transfer immediately.\n\nAmount: $45,000\n\nThis is confidential.",
-                isPhishing: true,
-                urls: [],
-                urlAnalysis: {},
-                redFlags: ["CEO fraud attempt", "Urgency without verification", "Requests money transfer", "Bypasses normal procedures"]
-              },
-              {
-                from: "billing@adobe.com",
-                subject: "Your Adobe Creative Cloud Subscription",
-                body: "Your Adobe Creative Cloud subscription will renew on October 15, 2025 for $54.99.\n\nhttps://www.adobe.com/account",
-                isPhishing: false,
-                urls: ["https://www.adobe.com/account"],
-                urlAnalysis: {
-                  "https://www.adobe.com/account": {
-                    suspicious: false,
-                    reasons: ["Official Adobe domain", "HTTPS secured"]
-                  }
+                {
+                    from: "boss@yourcompany.com",
+                    subject: "RE: Urgent Wire Transfer",
+                    body: "I need you to process a wire transfer immediately. I'm in a meeting and can't take calls.\n\nAmount: $45,000\nRecipient: Global Solutions LLC\n\nThis is confidential. Don't discuss with accounting yet.",
+                    isPhishing: true,
+                    urls: [],
+                    urlAnalysis: {},
+                    redFlags: ["CEO fraud / BEC attempt", "Urgency without verification", "Requests money transfer", "Bypasses normal procedures", "Confidentiality request"]
                 },
-                redFlags: []
-              },
-              {
-                from: "hr-benefits@company-portal.net",
-                subject: "Important: Update Your W-4 Form",
-                body: "Please fill out your W-4 information:\n\nhttps://company-portal.net/hr/w4-update\n\nYou'll need SSN, DOB, and Banking Information.",
-                isPhishing: true,
-                urls: ["https://company-portal.net/hr/w4-update"],
-                urlAnalysis: {
-                  "https://company-portal.net/hr/w4-update": {
-                    suspicious: true,
-                    reasons: ["Generic domain", "Requests sensitive PII via link"]
-                  }
+                {
+                    from: "billing@adobe.com",
+                    subject: "Your Adobe Creative Cloud Subscription",
+                    body: "Your Adobe Creative Cloud subscription will renew on October 15, 2025 for $54.99.\n\nView details: https://www.adobe.com/account",
+                    isPhishing: false,
+                    urls: ["https://www.adobe.com/account"],
+                    urlAnalysis: {
+                        "https://www.adobe.com/account": {
+                            suspicious: false,
+                            reasons: ["Official Adobe domain", "HTTPS secured", "Standard URL structure"]
+                        }
+                    },
+                    redFlags: []
                 },
-                redFlags: ["Requests SSN and banking info", "Generic domain", "Legitimate HR wouldn't request via email link"]
-              },
-              {
-                from: "support@apple.com",
-                subject: "Your Apple ID Was Used to Sign In",
-                body: "Your Apple ID was used to sign in to iCloud on a MacBook Pro.\n\nDate: Sept 30, 2025\nLocation: New York, USA\n\nhttps://appleid.apple.com",
-                isPhishing: false,
-                urls: ["https://appleid.apple.com"],
-                urlAnalysis: {
-                  "https://appleid.apple.com": {
-                    suspicious: false,
-                    reasons: ["Official Apple domain", "HTTPS secured"]
-                  }
+                {
+                    from: "hr-benefits@company-portal.net",
+                    subject: "Important: Update Your W-4 Form",
+                    body: "Our HR system is updating. Please fill out your W-4 information:\n\nhttps://company-portal.net/hr/w4-update\n\nYou'll need:\n- Social Security Number\n- Date of Birth\n- Banking Information\n\nComplete by end of day.",
+                    isPhishing: true,
+                    urls: ["https://company-portal.net/hr/w4-update"],
+                    urlAnalysis: {
+                        "https://company-portal.net/hr/w4-update": {
+                            suspicious: true,
+                            reasons: ["Generic domain not specific to company", "Requests sensitive PII via link", "Not official HR portal"]
+                        }
+                    },
+                    redFlags: ["Requests SSN and banking info", "Generic domain", "Legitimate HR wouldn't request via email link", "Artificial deadline"]
                 },
-                redFlags: []
-              },
-              {
-                from: "service@bankofamerica-alert.com",
-                subject: "Suspicious Activity Detected",
-                body: "We detected unusual charges on your account.\n\nTransaction: $1,247.99\n\nhttps://bankofamerica-alert.com/verify",
-                isPhishing: true,
-                urls: ["https://bankofamerica-alert.com/verify"],
-                urlAnalysis: {
-                  "https://bankofamerica-alert.com/verify": {
-                    suspicious: true,
-                    reasons: ["Domain is not bankofamerica.com", "Uses hyphenated fake subdomain"]
-                  }
+                {
+                    from: "support@apple.com",
+                    subject: "Your Apple ID Was Used to Sign In",
+                    body: "Your Apple ID was used to sign in to iCloud on a MacBook Pro.\n\nDate: Sept 30, 2025, 2:45 PM EST\nLocation: New York, USA\n\nIf not you, secure your account: https://appleid.apple.com",
+                    isPhishing: false,
+                    urls: ["https://appleid.apple.com"],
+                    urlAnalysis: {
+                        "https://appleid.apple.com": {
+                            suspicious: false,
+                            reasons: ["Official Apple domain", "HTTPS secured", "Standard Apple ID URL"]
+                        }
+                    },
+                    redFlags: []
                 },
-                redFlags: ["Domain is not official bank domain", "Hyphenated subdomain trick", "Creates panic"]
-              }
+                {
+                    from: "service@bankofamerica-alert.com",
+                    subject: "Suspicious Activity Detected",
+                    body: "We detected unusual charges on your account ending in 4532.\n\nTransaction: $1,247.99 at Electronics Store\nLocation: California\n\nIf you didn't make this purchase, verify:\nhttps://bankofamerica-alert.com/verify",
+                    isPhishing: true,
+                    urls: ["https://bankofamerica-alert.com/verify"],
+                    urlAnalysis: {
+                        "https://bankofamerica-alert.com/verify": {
+                            suspicious: true,
+                            reasons: ["Domain is not bankofamerica.com", "Uses hyphenated fake subdomain", "Real bank uses bankofamerica.com"]
+                        }
+                    },
+                    redFlags: ["Domain is not official bank domain", "Hyphenated subdomain trick", "Creates panic with fraud alert"]
+                }
             ],
             hard: [
-              {
-                from: "notifications@github.com",
-                subject: "Security vulnerability detected",
-                body: "GitHub Security detected a critical vulnerability.\n\nCVE-2025-12345: Remote Code Execution\n\nhttps://github.com/security/advisories/details",
-                isPhishing: false,
-                urls: ["https://github.com/security/advisories/details"],
-                urlAnalysis: {
-                  "https://github.com/security/advisories/details": {
-                    suspicious: false,
-                    reasons: ["Official GitHub domain", "HTTPS secured", "Standard GitHub URL"]
-                  }
+                {
+                    from: "notifications@github.com",
+                    subject: "Security vulnerability detected",
+                    body: "GitHub Security detected a critical vulnerability in your repository.\n\nCVE-2025-12345: Remote Code Execution\nSeverity: Critical\n\nView details: https://github.com/security/advisories/details",
+                    isPhishing: false,
+                    urls: ["https://github.com/security/advisories/details"],
+                    urlAnalysis: {
+                        "https://github.com/security/advisories/details": {
+                            suspicious: false,
+                            reasons: ["Official GitHub domain", "HTTPS secured", "Standard GitHub URL pattern"]
+                        }
+                    },
+                    redFlags: []
                 },
-                redFlags: []
-              },
-              {
-                from: "security@github.com",
-                subject: "Critical: Verify Your Account",
-                body: "Our systems detected a ToS violation.\n\nhttps://github-security.verification-portal.com/appeal\n\nFailure to respond within 48 hours will result in suspension.",
-                isPhishing: true,
-                urls: ["https://github-security.verification-portal.com/appeal"],
-                urlAnalysis: {
-                  "https://github-security.verification-portal.com/appeal": {
-                    suspicious: true,
-                    reasons: ["Domain is NOT github.com", "verification-portal.com is not GitHub"]
-                  }
+                {
+                    from: "security@github.com",
+                    subject: "Critical: Verify Your Account",
+                    body: "Our systems detected a ToS violation in your account.\n\nViolation: Unauthorized API usage\n\nVerify and appeal:\nhttps://github-security.verification-portal.com/appeal\n\nFailure to respond within 48 hours will result in permanent suspension.",
+                    isPhishing: true,
+                    urls: ["https://github-security.verification-portal.com/appeal"],
+                    urlAnalysis: {
+                        "https://github-security.verification-portal.com/appeal": {
+                            suspicious: true,
+                            reasons: ["Domain is NOT github.com", "Uses github-security as subdomain of different domain", "verification-portal.com is not GitHub"]
+                        }
+                    },
+                    redFlags: ["Domain tricks: github-security.verification-portal.com is NOT GitHub", "Creates fear with suspension threat", "Artificial 48-hour deadline"]
                 },
-                redFlags: ["Domain tricks: github-security.verification-portal.com is NOT GitHub", "Creates fear", "Artificial deadline"]
-              },
-              {
-                from: "donotreply@irs.gov",
-                subject: "Tax Refund Notification",
-                body: "You are eligible for a tax refund of $1,847.00.\n\nhttps://irs.gov.refund-processing.com/verify-identity\n\nYou will need SSN, DOB, AGI, and bank account.",
-                isPhishing: true,
-                urls: ["https://irs.gov.refund-processing.com/verify-identity"],
-                urlAnalysis: {
-                  "https://irs.gov.refund-processing.com/verify-identity": {
-                    suspicious: true,
-                    reasons: ["Domain is refund-processing.com NOT irs.gov", "Advanced subdomain spoofing"]
-                  }
+                {
+                    from: "donotreply@irs.gov",
+                    subject: "Tax Refund Notification",
+                    body: "The IRS determined you are eligible for a tax refund of $1,847.00.\n\nTo process your refund, verify your identity:\nhttps://irs.gov.refund-processing.com/verify-identity\n\nYou will need:\n- Social Security Number\n- Date of Birth\n- Last year's AGI\n- Bank account for direct deposit",
+                    isPhishing: true,
+                    urls: ["https://irs.gov.refund-processing.com/verify-identity"],
+                    urlAnalysis: {
+                        "https://irs.gov.refund-processing.com/verify-identity": {
+                            suspicious: true,
+                            reasons: ["Domain is refund-processing.com NOT irs.gov", "irs.gov appears as subdomain of fake domain", "Advanced subdomain spoofing"]
+                        }
+                    },
+                    redFlags: ["Advanced domain spoofing", "Requests SSN", "IRS doesn't request verification via email", "Too good to be true refund"]
                 },
-                redFlags: ["Advanced domain spoofing", "Requests SSN", "IRS doesn't request verification via email", "Too good to be true"]
-              },
-              {
-                from: "admin@company.com",
-                subject: "IT Security: Required MFA Setup",
-                body: "All employees must enable Multi-Factor Authentication by October 5th.\n\nSetup instructions:\n1. Log into employee portal\n2. Navigate to Security Settings\n3. Enable MFA",
-                isPhishing: false,
-                urls: [],
-                urlAnalysis: {},
-                redFlags: []
-              },
-              {
-                from: "legal@docusign-documents.com",
-                subject: "Document Requires Signature",
-                body: "You have a document waiting.\n\nDocument: Invoice_45821.pdf\nExpires: Oct 2, 2025\n\nhttps://docusign-documents.com/sign/inv45821",
-                isPhishing: true,
-                urls: ["https://docusign-documents.com/sign/inv45821"],
-                urlAnalysis: {
-                  "https://docusign-documents.com/sign/inv45821": {
-                    suspicious: true,
-                    reasons: ["Domain is docusign-documents.com not docusign.com", "Hyphenated variation"]
-                  }
+                {
+                    from: "admin@company.com",
+                    subject: "IT Security: Required MFA Setup",
+                    body: "As part of our security initiative, all employees must enable Multi-Factor Authentication by October 5th.\n\nSetup instructions:\n1. Log into employee portal\n2. Navigate to Security Settings\n3. Enable MFA with your phone\n\nQuestions? Contact IT at x4567",
+                    isPhishing: false,
+                    urls: [],
+                    urlAnalysis: {},
+                    redFlags: []
                 },
-                redFlags: ["Domain spoofing", "DocuSign spoofing", "Creates urgency with expiration"]
-              },
-              {
-                from: "notifications@slack.com",
-                subject: "New message from @sarah.johnson",
-                body: "@sarah.johnson mentioned you:\n\n\"Can you review this? https://docs.google.com/document/d/abc123xyz\"\n\nhttps://app.slack.com/client/T012ABC/C034DEF",
-                isPhishing: false,
-                urls: ["https://docs.google.com/document/d/abc123xyz", "https://app.slack.com/client/T012ABC/C034DEF"],
-                urlAnalysis: {
-                  "https://docs.google.com/document/d/abc123xyz": {
-                    suspicious: false,
-                    reasons: ["Official Google Docs domain", "HTTPS secured"]
-                  },
-                  "https://app.slack.com/client/T012ABC/C034DEF": {
-                    suspicious: false,
-                    reasons: ["Official Slack domain", "HTTPS secured"]
-                  }
+                {
+                    from: "legal@docusign-documents.com",
+                    subject: "Document Requires Your Signature",
+                    body: "You have a document waiting for your signature.\n\nFrom: Accounts Payable\nDocument: Invoice_45821.pdf\nExpires: October 2, 2025\n\nReview and sign: https://docusign-documents.com/sign/inv45821",
+                    isPhishing: true,
+                    urls: ["https://docusign-documents.com/sign/inv45821"],
+                    urlAnalysis: {
+                        "https://docusign-documents.com/sign/inv45821": {
+                            suspicious: true,
+                            reasons: ["Domain is docusign-documents.com not docusign.com", "Real DocuSign uses docusign.com or docusign.net", "Hyphenated domain variation"]
+                        }
+                    },
+                    redFlags: ["Domain is docusign-documents.com not official docusign.com", "DocuSign spoofing", "Creates urgency with expiration", "Hyphenated variation"]
                 },
-                redFlags: []
-              },
-              {
-                from: "verify@accounts.microsoft-services.com",
-                subject: "Microsoft Account Security Code",
-                body: "Your security code is: 847293\n\nSomeone requested a code for user@email.com.\n\nhttps://account.microsoft-services.com/security",
-                isPhishing: true,
-                urls: ["https://account.microsoft-services.com/security"],
-                urlAnalysis: {
-                  "https://account.microsoft-services.com/security": {
-                    suspicious: true,
-                    reasons: ["Domain is microsoft-services.com not microsoft.com"]
-                  }
+                {
+                    from: "notifications@slack.com",
+                    subject: "New message from @sarah.johnson",
+                    body: "@sarah.johnson mentioned you in #general:\n\n\"Can you review this document when you get a chance?\nhttps://docs.google.com/document/d/abc123xyz\"\n\nView in Slack: https://app.slack.com/client/T012ABC/C034DEF",
+                    isPhishing: false,
+                    urls: ["https://docs.google.com/document/d/abc123xyz", "https://app.slack.com/client/T012ABC/C034DEF"],
+                    urlAnalysis: {
+                        "https://docs.google.com/document/d/abc123xyz": {
+                            suspicious: false,
+                            reasons: ["Official Google Docs domain", "HTTPS secured", "Standard Google Docs URL structure"]
+                        },
+                        "https://app.slack.com/client/T012ABC/C034DEF": {
+                            suspicious: false,
+                            reasons: ["Official Slack domain", "HTTPS secured", "Standard Slack client URL"]
+                        }
+                    },
+                    redFlags: []
                 },
-                redFlags: ["Domain spoofing: microsoft-services.com not microsoft.com", "Creates urgency"]
-              }
+                {
+                    from: "verify@accounts.microsoft-services.com",
+                    subject: "Microsoft Account Security Code",
+                    body: "Your security code is: 847293\n\nSomeone requested a security code for your Microsoft account user@email.com.\n\nIf this wasn't you, secure your account:\nhttps://account.microsoft-services.com/security\n\nThis code expires in 10 minutes.",
+                    isPhishing: true,
+                    urls: ["https://account.microsoft-services.com/security"],
+                    urlAnalysis: {
+                        "https://account.microsoft-services.com/security": {
+                            suspicious: true,
+                            reasons: ["Domain is microsoft-services.com not microsoft.com", "Real Microsoft uses microsoft.com or live.com", "Common spoofing technique"]
+                        }
+                    },
+                    redFlags: ["Domain spoofing: microsoft-services.com not microsoft.com", "Real Microsoft uses microsoft.com, live.com, or outlook.com", "Creates urgency with expiration"]
+                }
             ]
-          };
+        };
 
-          useEffect(() => {
-            if (gameState === 'playing' && timeLeft > 0) {
-              const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-              return () => clearTimeout(timer);
-            } else if (timeLeft === 0 && gameState === 'playing') {
-              endLevel(false);
+        // Render Functions
+        function render() {
+            const app = document.getElementById('app');
+            
+            if (state.screen === 'menu') {
+                app.innerHTML = renderMenu();
+            } else if (state.screen === 'playing') {
+                app.innerHTML = renderGame();
+                startTimer();
+            } else if (state.screen === 'levelComplete') {
+                app.innerHTML = renderLevelComplete();
+            } else if (state.screen === 'levelFailed') {
+                app.innerHTML = renderLevelFailed();
             }
-          }, [timeLeft, gameState]);
-
-          const startLevel = (level) => {
-            setCurrentLevel(level);
-            setGameState('playing');
-            setCurrentEmail(0);
-            setScore(0);
-            setTimeLeft(levels[level].timer);
-            setLives(3);
-            setSelectedAnswer(null);
-            setFeedback('');
-            setShowURLAnalysis(false);
-          };
-
-          const handleAnswer = (answer) => {
-            const levelEmails = emailData[levels[currentLevel].emails];
-            const email = levelEmails[currentEmail];
-            const correct = answer === email.isPhishing;
-            
-            setSelectedAnswer(answer);
-            
-            const newStats = { ...statistics };
-            newStats.totalAttempts++;
-            
-            if (correct) {
-              setScore(score + 100);
-              setFeedback('✓ Correct!');
-              newStats.correctAnswers++;
-              if (email.isPhishing) {
-                newStats.phishingCaught++;
-              } else {
-                newStats.legitimateCaught++;
-              }
-            } else {
-              setLives(lives - 1);
-              setFeedback(`✗ Wrong! This email ${email.isPhishing ? 'IS' : 'IS NOT'} phishing.`);
-              
-              if (email.isPhishing) {
-                newStats.phishingMissed++;
-                newStats.commonMistakes.push(`Missed: ${email.subject}`);
-              } else {
-                newStats.legitimateMissed++;
-                newStats.commonMistakes.push(`False positive: ${email.subject}`);
-              }
-              
-              if (lives - 1 <= 0) {
-                setStatistics(newStats);
-                setTimeout(() => endLevel(false), 2500);
-                return;
-              }
-            }
-            
-            setStatistics(newStats);
-
-            setTimeout(() => {
-              if (currentEmail < levelEmails.length - 1) {
-                setCurrentEmail(currentEmail + 1);
-                setSelectedAnswer(null);
-                setFeedback('');
-                setShowURLAnalysis(false);
-              } else {
-                endLevel(true);
-              }
-            }, 3500);
-          };
-
-          const endLevel = (completed) => {
-            const levelEmails = emailData[levels[currentLevel].emails];
-            const maxScore = levelEmails.length * 100;
-            const percentage = (score / maxScore) * 100;
-            
-            if (completed && percentage >= 90) {
-              setCompletedLevels([...completedLevels, currentLevel]);
-              setGameState('levelComplete');
-            } else {
-              setGameState('levelFailed');
-            }
-          };
-
-          if (gameState === 'menu') {
-            return (
-              <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white p-8">
-                <div className="max-w-4xl mx-auto">
-                  <div className="text-center mb-12">
-                    <Shield className="w-32 h-32 mb-6 text-yellow-400 mx-auto" />
-                    <h1 className="text-6xl font-bold mb-4">Phishing Detective</h1>
-                    <p className="text-xl">Multi-Level Security Training</p>
-                  </div>
-                  <div className="grid gap-6 mb-8">
-                    {[1, 2, 3].map(level => {
-                      const isUnlocked = level === 1 || completedLevels.includes(level - 1);
-                      const isCompleted = completedLevels.includes(level);
-                      return (
-                        <div
-                          key={level}
-                          className={`bg-white bg-opacity-10 rounded-lg p-6 ${isUnlocked ? 'cursor-pointer hover:bg-opacity-20' : 'opacity-50'}`}
-                          onClick={() => isUnlocked && startLevel(level)}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                              {isUnlocked ? (
-                                isCompleted ? <CheckCircle className="w-12 h-12 text-green-400" /> : <Unlock className="w-12 h-12 text-yellow-400" />
-                              ) : (
-                                <Lock className="w-12 h-12 text-gray-400" />
-                              )}
-                              <div>
-                                <h3 className="text-2xl font-bold">Level {level}: {levels[level].name}</h3>
-                                <p className="text-gray-300">{emailData[levels[level].emails].length} emails • {levels[level].timer}s</p>
-                                {!isUnlocked && <p className="text-yellow-400 text-sm mt-1">Complete previous level</p>}
-                              </div>
-                            </div>
-                            {isUnlocked && (
-                              <div className="text-right">
-                                <p className="text-sm text-gray-300">Passing Score</p>
-                                <p className="text-3xl font-bold">90%</p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className="bg-white bg-opacity-10 rounded-lg p-6">
-                    <h3 className="text-2xl font-bold mb-4">How to Play:</h3>
-                    <ul className="space-y-2">
-                      <li>• Analyze emails for red flags</li>
-                      <li>• Use URL analysis to inspect links</li>
-                      <li>• Need 90% or higher to advance</li>
-                      <li>• Complete all 3 levels to earn the flag</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            );
-          }
-
-          if (gameState === 'playing') {
-            const levelEmails = emailData[levels[currentLevel].emails];
-            const email = levelEmails[currentEmail];
-            
-            return (
-              <div className="min-h-screen bg-gray-100 p-4 md:p-8">
-                <div className="max-w-5xl mx-auto">
-                  <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg p-4 mb-6">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <span className="text-sm">Level {currentLevel}: {levels[currentLevel].name}</span>
-                        <div className="text-2xl font-bold">Email {currentEmail + 1} of {levelEmails.length}</div>
-                      </div>
-                      <div className="flex items-center gap-6">
-                        <div className="text-center">
-                          <Clock className="w-6 h-6 mx-auto" />
-                          <div className="text-2xl font-bold">{timeLeft}s</div>
-                        </div>
-                        <div className="text-center">
-                          <Target className="w-6 h-6 mx-auto" />
-                          <div className="text-2xl font-bold">{score}</div>
-                        </div>
-                        <div className="flex gap-1">
-                          {[...Array(3)].map((_, i) => (
-                            <Shield key={i} className={`w-8 h-8 ${i < lives ? 'text-red-500 fill-red-500' : 'text-gray-300'}`} />
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-                    <div className="bg-gray-50 border-2 border-gray-300 rounded-lg p-6">
-                      <div className="flex items-start gap-4 mb-4">
-                        <Mail className="w-10 h-10 text-blue-600 flex-shrink-0" />
-                        <div className="flex-1">
-                          <div className="mb-3 pb-3 border-b">
-                            <div className="mb-2">
-                              <span className="font-bold">From:</span>
-                              <span className="ml-2 font-mono text-sm bg-gray-200 px-2 py-1 rounded">{email.from}</span>
-                            </div>
-                            <div>
-                              <span className="font-bold">Subject:</span>
-                              <span className="ml-2">{email.subject}</span>
-                            </div>
-                          </div>
-                          <div className="whitespace-pre-line">{email.body}</div>
-                        </div>
-                      </div>
-
-                      {email.urls.length > 0 && (
-                        <div className="mt-6 pt-6 border-t">
-                          <button
-                            onClick={() => setShowURLAnalysis(!showURLAnalysis)}
-                            className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
-                          >
-                            <span className="text-xl">🔗</span>
-                            {showURLAnalysis ? 'Hide' : 'Analyze'} URLs ({email.urls.length})
-                          </button>
-                          
-                          {showURLAnalysis && (
-                            <div className="mt-4 space-y-3">
-                              {email.urls.map((url, idx) => {
-                                const analysis = email.urlAnalysis[url];
-                                return (
-                                  <div key={idx} className={`border-2 rounded-lg p-4 ${analysis.suspicious ? 'border-red-500 bg-red-50' : 'border-green-500 bg-green-50'}`}>
-                                    <div className="flex items-start gap-3">
-                                      {analysis.suspicious ? (
-                                        <AlertTriangle className="w-6 h-6 text-red-600 flex-shrink-0" />
-                                      ) : (
-                                        <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
-                                      )}
-                                      <div className="flex-1">
-                                        <div className="font-mono text-sm mb-2 break-all bg-white px-2 py-1 rounded">{url}</div>
-                                        <div className="font-bold mb-1">{analysis.suspicious ? '⚠️ Suspicious' : '✓ Legitimate'}</div>
-                                        <ul className="text-sm space-y-1">
-                                          {analysis.reasons.map((reason, i) => (
-                                            <li key={i}>• {reason}</li>
-                                          ))}
-                                        </ul>
-                                      </div>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {!selectedAnswer && (
-                    <div className="flex gap-4 justify-center">
-                      <button
-                        onClick={() => handleAnswer(false)}
-                        className="bg-green-500 text-white px-12 py-6 rounded-lg text-2xl font-bold hover:bg-green-600 flex items-center gap-3"
-                      >
-                        <CheckCircle className="w-8 h-8" />
-                        Legitimate
-                      </button>
-                      <button
-                        onClick={() => handleAnswer(true)}
-                        className="bg-red-500 text-white px-12 py-6 rounded-lg text-2xl font-bold hover:bg-red-600 flex items-center gap-3"
-                      >
-                        <AlertTriangle className="w-8 h-8" />
-                        Phishing
-                      </button>
-                    </div>
-                  )}
-
-                  {feedback && (
-                    <div className={`mt-6 p-6 rounded-lg ${selectedAnswer === email.isPhishing ? 'bg-green-100 border-4 border-green-500' : 'bg-red-100 border-4 border-red-500'}`}>
-                      <p className="text-2xl font-bold mb-4">{feedback}</p>
-                      {email.isPhishing && email.redFlags.length > 0 && (
-                        <div className="bg-white rounded-lg p-4 mt-4">
-                          <p className="font-bold text-lg mb-3 text-red-700">🚩 Red Flags:</p>
-                          <ul className="space-y-2">
-                            {email.redFlags.map((flag, i) => (
-                              <li key={i} className="flex items-start gap-2">
-                                <span className="text-red-600">•</span>
-                                <span>{flag}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      {!email.isPhishing && (
-                        <div className="bg-white rounded-lg p-4 mt-4">
-                          <p className="text-green-700">✓ This is a legitimate email.</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          }
-
-          if (gameState === 'levelComplete') {
-            const levelEmails = emailData[levels[currentLevel].emails];
-            const maxScore = levelEmails.length * 100;
-            const percentage = Math.round((score / maxScore) * 100);
-            const isLevel3Complete = currentLevel === 3 && percentage >= 90;
-
-            return (
-              <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-green-900 text-white p-8">
-                <div className="max-w-4xl mx-auto text-center">
-                  <CheckCircle className="w-32 h-32 mb-6 text-yellow-400 mx-auto" />
-                  <h1 className="text-6xl font-bold mb-4">Level {currentLevel} Complete!</h1>
-                  <div className="text-8xl font-bold mb-4">{percentage}%</div>
-                  <p className="text-3xl mb-2">Score: {score} / {maxScore}</p>
-                  <p className="text-2xl mb-8">🎉 Excellent!</p>
-
-                  {isLevel3Complete && (
-                    <div className="bg-yellow-400 text-gray-900 rounded-lg p-8 mb-8 shadow-2xl">
-                      <h2 className="text-4xl font-bold mb-4">🏆 Congratulations! 🏆</h2>
-                      <p className="text-xl mb-4">You've completed all levels!</p>
-                      <div className="bg-gray-900 text-green-400 font-mono text-2xl p-6 rounded-lg break-all">
-                        flagOF&#123;Cau6ht_a_B16_Ph15h&#125;
-                      </div>
-                      <p className="text-sm mt-4 italic">Copy this flag to prove your mastery!</p>
-                    </div>
-                  )}
-
-                  <div className="bg-white bg-opacity-10 rounded-lg p-6 mb-8">
-                    <h3 className="text-3xl font-bold mb-6">📊 Your Statistics</h3>
-                    <div className="grid grid-cols-2 gap-6 text-left">
-                      <div className="bg-white bg-opacity-10 rounded-lg p-4">
-                        <p className="text-sm text-gray-300">Total Attempts</p>
-                        <p className="text-4xl font-bold">{statistics.totalAttempts}</p>
-                      </div>
-                      <div className="bg-white bg-opacity-10 rounded-lg p-4">
-                        <p className="text-sm text-gray-300">Correct Answers</p>
-                        <p className="text-4xl font-bold">{statistics.correctAnswers}</p>
-                      </div>
-                      <div className="bg-green-500 bg-opacity-30 rounded-lg p-4">
-                        <p className="text-sm text-gray-200">Phishing Caught</p>
-                        <p className="text-4xl font-bold">{statistics.phishingCaught}</p>
-                      </div>
-                      <div className="bg-red-500 bg-opacity-30 rounded-lg p-4">
-                        <p className="text-sm text-gray-200">Phishing Missed</p>
-                        <p className="text-4xl font-bold">{statistics.phishingMissed}</p>
-                      </div>
-                      <div className="bg-blue-500 bg-opacity-30 rounded-lg p-4">
-                        <p className="text-sm text-gray-200">Legitimate Caught</p>
-                        <p className="text-4xl font-bold">{statistics.legitimateCaught}</p>
-                      </div>
-                      <div className="bg-orange-500 bg-opacity-30 rounded-lg p-4">
-                        <p className="text-sm text-gray-200">False Positives</p>
-                        <p className="text-4xl font-bold">{statistics.legitimateMissed}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-4 justify-center">
-                    {currentLevel < 3 && (
-                      <button
-                        onClick={() => startLevel(currentLevel + 1)}
-                        className="bg-yellow-400 text-gray-900 px-8 py-4 rounded-lg text-2xl font-bold hover:bg-yellow-300"
-                      >
-                        Next Level →
-                      </button>
-                    )}
-                    <button
-                      onClick={() => setGameState('menu')}
-                      className="bg-white bg-opacity-20 text-white px-8 py-4 rounded-lg text-2xl font-bold hover:bg-opacity-30"
-                    >
-                      Main Menu
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          }
-
-          if (gameState === 'levelFailed') {
-            const levelEmails = emailData[levels[currentLevel].emails];
-            const maxScore = levelEmails.length * 100;
-            const percentage = Math.round((score / maxScore) * 100);
-
-            return (
-              <div className="min-h-screen bg-gradient-to-br from-red-900 via-red-800 to-red-900 text-white p-8">
-                <div className="max-w-4xl mx-auto text-center">
-                  <XCircle className="w-32 h-32 mb-6 text-yellow-400 mx-auto" />
-                  <h1 className="text-6xl font-bold mb-4">Level {currentLevel} Failed</h1>
-                  <div className="text-8xl font-bold mb-4">{percentage}%</div>
-                  <p className="text-3xl mb-2">Score: {score} / {maxScore}</p>
-                  <p className="text-2xl mb-8">You need 90% or higher to advance</p>
-
-                  <div className="bg-white bg-opacity-10 rounded-lg p-6 mb-8">
-                    <h3 className="text-3xl font-bold mb-6">📊 Your Statistics</h3>
-                    <div className="grid grid-cols-2 gap-6 text-left">
-                      <div className="bg-white bg-opacity-10 rounded-lg p-4">
-                        <p className="text-sm text-gray-300">Total Attempts</p>
-                        <p className="text-4xl font-bold">{statistics.totalAttempts}</p>
-                      </div>
-                      <div className="bg-white bg-opacity-10 rounded-lg p-4">
-                        <p className="text-sm text-gray-300">Correct Answers</p>
-                        <p className="text-4xl font-bold">{statistics.correctAnswers}</p>
-                      </div>
-                      <div className="bg-green-500 bg-opacity-30 rounded-lg p-4">
-                        <p className="text-sm text-gray-200">Phishing Caught</p>
-                        <p className="text-4xl font-bold">{statistics.phishingCaught}</p>
-                      </div>
-                      <div className="bg-red-500 bg-opacity-30 rounded-lg p-4">
-                        <p className="text-sm text-gray-200">Phishing Missed</p>
-                        <p className="text-4xl font-bold">{statistics.phishingMissed}</p>
-                      </div>
-                      <div className="bg-blue-500 bg-opacity-30 rounded-lg p-4">
-                        <p className="text-sm text-gray-200">Legitimate Caught</p>
-                        <p className="text-4xl font-bold">{statistics.legitimateCaught}</p>
-                      </div>
-                      <div className="bg-orange-500 bg-opacity-30 rounded-lg p-4">
-                        <p className="text-sm text-gray-200">False Positives</p>
-                        <p className="text-4xl font-bold">{statistics.legitimateMissed}</p>
-                      </div>
-                    </div>
-
-                    {statistics.commonMistakes.length > 0 && (
-                      <div className="mt-6 bg-white bg-opacity-10 rounded-lg p-4 text-left">
-                        <h4 className="font-bold text-xl mb-3">Areas to Review:</h4>
-                        <ul className="space-y-2">
-                          {statistics.commonMistakes.slice(-3).map((mistake, i) => (
-                            <li key={i} className="text-sm">• {mistake}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="bg-yellow-400 text-gray-900 rounded-lg p-6 mb-8">
-                    <h3 className="text-2xl font-bold mb-3">💡 Tips for Success:</h3>
-                    <ul className="text-left space-y-2">
-                      <li>• Check the sender's email address carefully</li>
-                      <li>• Use URL analysis to inspect links</li>
-                      <li>• Look for urgency and fear tactics</li>
-                      <li>• Be suspicious of requests for sensitive information</li>
-                      <li>• Verify domain names match legitimate companies</li>
-                    </ul>
-                  </div>
-
-                  <div className="flex gap-4 justify-center">
-                    <button
-                      onClick={() => startLevel(currentLevel)}
-                      className="bg-yellow-400 text-gray-900 px-8 py-4 rounded-lg text-2xl font-bold hover:bg-yellow-300"
-                    >
-                      Try Again
-                    </button>
-                    <button
-                      onClick={() => setGameState('menu')}
-                      className="bg-white bg-opacity-20 text-white px-8 py-4 rounded-lg text-2xl font-bold hover:bg-opacity-30"
-                    >
-                      Main Menu
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          }
         }
 
-        ReactDOM.render(<PhishingGame />, document.getElementById('root'));
+        function renderMenu() {
+            return `
+                <div class="container">
+                    <div class="header">
+                        <div class="shield">🛡️</div>
+                        <h1>Phishing Detective</h1>
+                        <p class="subtitle">Multi-Level Security Training Challenge</p>
+                    </div>
+                    
+                    ${[1, 2, 3].map(level => {
+                        const isUnlocked = level === 1 || state.completedLevels.includes(level - 1);
+                        const isCompleted = state.completedLevels.includes(level);
+                        return `
+                            <div class="level-card ${isUnlocked ? '' : 'locked'}" 
+                                 onclick="${isUnlocked ? `startLevel(${level})` : ''}">
+                                <div class="level-info">
+                                    <div class="level-icon">
+                                        ${isUnlocked ? (isCompleted ? '✅' : '🔓') : '🔒'}
+                                    </div>
+                                    <div class="level-details">
+                                        <h3>Level ${level}: ${levels[level].name}</h3>
+                                        <p>${emails[levels[level].key].length} emails • ${levels[level].timer}s timer</p>
+                                        ${!isUnlocked ? '<p style="color: #fbbf24; font-size: 0.9rem; margin-top: 5px;">Complete previous level to unlock</p>' : ''}
+                                    </div>
+                                </div>
+                                ${isUnlocked ? `
+                                    <div class="level-score">
+                                        <p>Passing Score</p>
+                                        <p class="percentage">90%</p>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    }).join('')}
+                    
+                    <div class="how-to-play">
+                        <h3>How to Play:</h3>
+                        <ul>
+                            <li>Each level has unique phishing scenarios</li>
+                            <li>Analyze emails carefully for red flags</li>
+                            <li>Use URL analysis to inspect suspicious links</li>
+                            <li>You need 90% or higher to advance to the next level</li>
+                            <li>Complete all 3 levels to earn the final flag</li>
+                            <li>If you fail, you'll restart that level</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderGame() {
+            const levelKey = levels[state.currentLevel].key;
+            const levelEmails = emails[levelKey];
+            const email = levelEmails[state.currentEmail];
+            
+            return `
+                <div class="game-screen">
+                    <div class="container">
+                        <div class="game-header">
+                            <div>
+                                <div style="font-size: 0.9rem; opacity: 0.8;">Level ${state.currentLevel}: ${levels[state.currentLevel].name}</div>
+                                <div style="font-size: 1.5rem; font-weight: bold;">Email ${state.currentEmail + 1} of ${levelEmails.length}</div>
+                            </div>
+                            <div class="game-stats">
+                                <div class="stat">
+                                    <div class="stat-icon">⏱️</div>
+                                    <div class="stat-value" id="timer">${state.timeLeft}s</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-icon">🎯</div>
+                                    <div class="stat-value">${state.score}</div>
+                                </div>
+                                <div class="lives">
+                                    ${[1, 2, 3].map(i => `<div class="heart ${i <= state.lives ? '' : 'lost'}">❤️</div>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="email-container">
+                            <div class="email-box">
+                                <div class="email-header">
+                                    <div class="email-icon">✉️</div>
+                                    <div class="email-meta">
+                                        <div class="email-field">
+                                            <strong>From:</strong>
+                                            <span class="email-from">${email.from}</span>
+                                        </div>
+                                        <div class="email-field">
+                                            <strong>Subject:</strong> ${email.subject}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="email-body">${email.body}</div>
+                                
+                                ${email.urls.length > 0 ? `
+                                    <div class="url-section">
+                                        <button class="analyze-btn" onclick="toggleURLAnalysis()">
+                                            🔗 ${state.showURLAnalysis ? 'Hide' : 'Analyze'} URLs (${email.urls.length})
+                                        </button>
+                                        
+                                        <div id="urlAnalysis" class="${state.showURLAnalysis ? '' : 'hidden'}">
+                                            ${email.urls.map(url => {
+                                                const analysis = email.urlAnalysis[url];
+                                                return `
+                                                    <div class="url-box ${analysis.suspicious ? 'suspicious' : 'safe'}">
+                                                        <div>
+                                                            ${analysis.suspicious ? '⚠️' : '✅'}
+                                                        </div>
+                                                        <div class="url-display">${url}</div>
+                                                        <div class="url-status">
+                                                            ${analysis.suspicious ? '⚠️ Suspicious URL' : '✓ Appears Legitimate'}
+                                                        </div>
+                                                        <ul class="url-reasons">
+                                                            ${analysis.reasons.map(reason => `<li>${reason}</li>`).join('')}
+                                                        </ul>
+                                                    </div>
+                                                `;
+                                            }).join('')}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                        
+                        ${!state.selectedAnswer ? `
+                            <div class="button-container">
+                                <button class="choice-btn legitimate-btn" onclick="handleAnswer(false)">
+                                    ✓ Legitimate Email
+                                </button>
+                                <button class="choice-btn phishing-btn" onclick="handleAnswer(true)">
+                                    ⚠️ Phishing Attack
+                                </button>
+                            </div>
+                        ` : ''}
+                        
+                        ${state.feedback ? `
+                            <div class="feedback ${state.selectedAnswer === email.isPhishing ? 'correct' : 'wrong'}">
+                                <div class="feedback-title">${state.feedback}</div>
+                                ${email.isPhishing && email.redFlags.length > 0 ? `
+                                    <div class="red-flags">
+                                        <h4>🚩 Red Flags Identified:</h4>
+                                        <ul>
+                                            ${email.redFlags.map(flag => `<li>${flag}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                ` : !email.isPhishing ? `
+                                    <div class="red-flags">
+                                        <p style="color: #22c55e;">✓ This is a legitimate email with proper authentication and reasonable requests.</p>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderLevelComplete() {
+            const levelKey = levels[state.currentLevel].key;
+            const maxScore = emails[levelKey].length * 100;
+            const percentage = Math.round((state.score / maxScore) * 100);
+            const isLevel3Complete = state.currentLevel === 3 && percentage >= 90;
+            
+            return `
+                <div class="results-screen">
+                    <div class="container">
+                        <div class="results-icon">✅</div>
+                        <h1 class="results-title">Level ${state.currentLevel} Complete!</h1>
+                        <div class="results-percentage">${percentage}%</div>
+                        <p class="results-score">Score: ${state.score} / ${maxScore}</p>
+                        <p style="font-size: 1.5rem; margin-bottom: 30px;">🎉 Excellent Work! You passed!</p>
+                        
+                        ${isLevel3Complete ? `
+                            <div class="flag-box">
+                                <h2>🏆 Congratulations! 🏆</h2>
+                                <p style="font-size: 1.3rem; margin-bottom: 20px;">You've completed all levels with excellence!</p>
+                                <div class="flag-code">flagOF{Cau6ht_a_B16_Ph15h}</div>
+                                <p style="font-size: 0.9rem; font-style: italic;">Copy this flag to prove your phishing detection mastery!</p>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <p>Total Attempts</p>
+                                <div class="number">${state.stats.totalAttempts}</div>
+                            </div>
+                            <div class="stat-card">
+                                <p>Correct Answers</p>
+                                <div class="number">${state.stats.correctAnswers}</div>
+                            </div>
+                            <div class="stat-card" style="background: rgba(34, 197, 94, 0.2);">
+                                <p>Phishing Caught</p>
+                                <div class="number">${state.stats.phishingCaught}</div>
+                            </div>
+                            <div class="stat-card" style="background: rgba(239, 68, 68, 0.2);">
+                                <p>Phishing Missed</p>
+                                <div class="number">${state.stats.phishingMissed}</div>
+                            </div>
+                            <div class="stat-card" style="background: rgba(59, 130, 246, 0.2);">
+                                <p>Legitimate Caught</p>
+                                <div class="number">${state.stats.legitimateCaught}</div>
+                            </div>
+                            <div class="stat-card" style="background: rgba(249, 115, 22, 0.2);">
+                                <p>False Positives</p>
+                                <div class="number">${state.stats.legitimateMissed}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            ${state.currentLevel < 3 ? `
+                                <button class="action-btn primary-btn" onclick="startLevel(${state.currentLevel + 1})">
+                                    Next Level →
+                                </button>
+                            ` : ''}
+                            <button class="action-btn secondary-btn" onclick="goToMenu()">
+                                Main Menu
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderLevelFailed() {
+            const levelKey = levels[state.currentLevel].key;
+            const maxScore = emails[levelKey].length * 100;
+            const percentage = Math.round((state.score / maxScore) * 100);
+            
+            return `
+                <div class="results-screen" style="background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 50%, #7f1d1d 100%);">
+                    <div class="container">
+                        <div class="results-icon">❌</div>
+                        <h1 class="results-title">Level ${state.currentLevel} Failed</h1>
+                        <div class="results-percentage">${percentage}%</div>
+                        <p class="results-score">Score: ${state.score} / ${maxScore}</p>
+                        <p style="font-size: 1.5rem; margin-bottom: 30px;">You need 90% or higher to advance</p>
+                        
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <p>Total Attempts</p>
+                                <div class="number">${state.stats.totalAttempts}</div>
+                            </div>
+                            <div class="stat-card">
+                                <p>Correct Answers</p>
+                                <div class="number">${state.stats.correctAnswers}</div>
+                            </div>
+                            <div class="stat-card" style="background: rgba(34, 197, 94, 0.2);">
+                                <p>Phishing Caught</p>
+                                <div class="number">${state.stats.phishingCaught}</div>
+                            </div>
+                            <div class="stat-card" style="background: rgba(239, 68, 68, 0.2);">
+                                <p>Phishing Missed</p>
+                                <div class="number">${state.stats.phishingMissed}</div>
+                            </div>
+                            <div class="stat-card" style="background: rgba(59, 130, 246, 0.2);">
+                                <p>Legitimate Caught</p>
+                                <div class="number">${state.stats.legitimateCaught}</div>
+                            </div>
+                            <div class="stat-card" style="background: rgba(249, 115, 22, 0.2);">
+                                <p>False Positives</p>
+                                <div class="number">${state.stats.legitimateMissed}</div>
+                            </div>
+                        </div>
+                        
+                        ${state.stats.mistakes.length > 0 ? `
+                            <div class="tips-box">
+                                <h3>Areas to Review:</h3>
+                                <ul>
+                                    ${state.stats.mistakes.slice(-3).map(mistake => `<li>${mistake}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="tips-box">
+                            <h3>💡 Tips for Success:</h3>
+                            <ul>
+                                <li>Check the sender's email address carefully</li>
+                                <li>Use URL analysis to inspect links</li>
+                                <li>Look for urgency and fear tactics</li>
+                                <li>Be suspicious of requests for sensitive information</li>
+                                <li>Verify domain names match legitimate companies</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button class="action-btn primary-btn" onclick="startLevel(${state.currentLevel})">
+                                Try Again
+                            </button>
+                            <button class="action-btn secondary-btn" onclick="goToMenu()">
+                                Main Menu
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Game Logic
+        function startLevel(level) {
+            state.currentLevel = level;
+            state.screen = 'playing';
+            state.currentEmail = 0;
+            state.score = 0;
+            state.timeLeft = levels[level].timer;
+            state.lives = 3;
+            state.selectedAnswer = null;
+            state.feedback = '';
+            state.showURLAnalysis = false;
+            render();
+        }
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            
+            timerInterval = setInterval(() => {
+                state.timeLeft--;
+                const timerEl = document.getElementById('timer');
+                if (timerEl) timerEl.textContent = state.timeLeft + 's';
+                
+                if (state.timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    endLevel(false);
+                }
+            }, 1000);
+        }
+
+        function handleAnswer(answer) {
+            const levelKey = levels[state.currentLevel].key;
+            const email = emails[levelKey][state.currentEmail];
+            const correct = answer === email.isPhishing;
+            
+            state.selectedAnswer = answer;
+            state.stats.totalAttempts++;
+            
+            if (correct) {
+                state.score += 100;
+                state.feedback = '✓ Correct! Well done!';
+                state.stats.correctAnswers++;
+                if (email.isPhishing) {
+                    state.stats.phishingCaught++;
+                } else {
+                    state.stats.legitimateCaught++;
+                }
+            } else {
+                state.lives--;
+                state.feedback = `✗ Wrong! This email ${email.isPhishing ? 'IS' : 'IS NOT'} a phishing attempt.`;
+                
+                if (email.isPhishing) {
+                    state.stats.phishingMissed++;
+                    state.stats.mistakes.push(`Missed phishing: ${email.subject}`);
+                } else {
+                    state.stats.legitimateMissed++;
+                    state.stats.mistakes.push(`False positive: ${email.subject}`);
+                }
+                
+                if (state.lives <= 0) {
+                    setTimeout(() => endLevel(false), 2500);
+                    render();
+                    return;
+                }
+            }
+            
+            render();
+            
+            setTimeout(() => {
+                const levelEmails = emails[levelKey];
+                if (state.currentEmail < levelEmails.length - 1) {
+                    state.currentEmail++;
+                    state.selectedAnswer = null;
+                    state.feedback = '';
+                    state.showURLAnalysis = false;
+                    render();
+                } else {
+                    endLevel(true);
+                }
+            }, 3500);
+        }
+
+        function endLevel(completed) {
+            if (timerInterval) clearInterval(timerInterval);
+            
+            const levelKey = levels[state.currentLevel].key;
+            const maxScore = emails[levelKey].length * 100;
+            const percentage = (state.score / maxScore) * 100;
+            
+            if (completed && percentage >= 90) {
+                if (!state.completedLevels.includes(state.currentLevel)) {
+                    state.completedLevels.push(state.currentLevel);
+                }
+                state.screen = 'levelComplete';
+            } else {
+                state.screen = 'levelFailed';
+            }
+            render();
+        }
+
+        function toggleURLAnalysis() {
+            state.showURLAnalysis = !state.showURLAnalysis;
+            render();
+        }
+
+        function goToMenu() {
+            state.screen = 'menu';
+            if (timerInterval) clearInterval(timerInterval);
+            render();
+        }
+
+        // Initialize
+        render();
     </script>
 </body>
 </html>
